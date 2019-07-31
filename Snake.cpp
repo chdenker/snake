@@ -65,7 +65,7 @@ public:
 
 class Player {
 public:
-	Player(unsigned int head_x, unsigned int head_y, unsigned int bpart_width, unsigned int bpart_height, unsigned int speed);
+	Player(unsigned int head_x, unsigned int head_y, unsigned int bpart_width, unsigned int bpart_height);
 
 	void render(Screen &screen);
 	void update(unsigned int screen_width, unsigned int screen_height);
@@ -88,15 +88,13 @@ private:
 	std::vector<BodyPart> bparts;
 	int direction_x;
 	int direction_y;
-	unsigned int speed;
 	Input input;
 };
 
-Player::Player(unsigned int head_x, unsigned int head_y, unsigned int bpart_width, unsigned int bpart_height, unsigned int speed)
+Player::Player(unsigned int head_x, unsigned int head_y, unsigned int bpart_width, unsigned int bpart_height)
 :  bparts{ { head_x, head_y, head_x, head_y, bpart_width, bpart_height }, { head_x, head_y + bpart_width, head_x, head_y + bpart_width, bpart_width, bpart_height } },
   direction_x(0),
-  direction_y(-1),
-  speed(speed)
+  direction_y(-1)
 {
 	reset_inputs();
 }
@@ -296,7 +294,7 @@ int main()
 
 	unsigned int player_x = screen.get_width() / 2;
 	unsigned int player_y = screen.get_height() - screen.get_height() / 4;
-	Player player(player_x, player_y, BPART_WIDTH, BPART_HEIGHT, 100);
+	Player player(player_x, player_y, BPART_WIDTH, BPART_HEIGHT);
 
 	std::srand(std::time(nullptr));
 //	Food food(rand() % (SCREEN_WIDTH - FOOD_WIDTH), rand() % (SCREEN_HEIGHT - FOOD_HEIGHT), FOOD_WIDTH, FOOD_HEIGHT);
