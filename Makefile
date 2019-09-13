@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-std=c++17 -pedantic -Wall -Wextra
+CFLAGS=-std=c++17 -pedantic -Wall -Wextra -O3
 LDFLAGS=-lSDL2
 
 all: snake

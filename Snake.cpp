@@ -6,15 +6,22 @@
 #include <cmath>
 #include <vector>
 
+// =========
 // Constants
+
 const char *GAME_TITLE = "Snake";
+
+// We limit the game to 10 FPS.
+// For this, we need to calculate the amount of milliseconds per frame,
+// which in the case of 10 FPS is 1000 / 10 = 100.
+const Uint32 MS_PER_FRAME = 100;
+
 const unsigned int SCREEN_WIDTH = 800;
 const unsigned int SCREEN_HEIGHT = 600;
 const unsigned int SCALE = 20;
-const unsigned int BPART_WIDTH = SCREEN_WIDTH / SCALE;
-const unsigned int BPART_HEIGHT = SCREEN_HEIGHT / SCALE;
-const unsigned int FOOD_WIDTH = SCREEN_WIDTH / SCALE;
-const unsigned int FOOD_HEIGHT = SCREEN_HEIGHT / SCALE;
+const unsigned int RECT_WIDTH = SCREEN_WIDTH / SCALE;
+const unsigned int RECT_HEIGHT = SCREEN_HEIGHT / SCALE;
+// =========
 
 class Screen {
 public:
@@ -217,7 +224,7 @@ void Player::update(Input &input, unsigned int screen_width, unsigned int screen
 	reset_inputs(input);
 
 	// Update the head's position
-	// TODO Make sure it is divisible by BPART_WIDTH and BPART_HEIGHT
+	// TODO Make sure it is divisible by RECT_WIDTH and RECT_HEIGHT
 	BodyPart &head = get_head_ref();
 	head.x = head.next_x;
 	head.y = head.next_y;
@@ -251,10 +258,10 @@ Food::Food()
 
 void Food::spawn()
 {
-	x = (std::rand() % SCALE) * FOOD_WIDTH;
-	y = (std::rand() % SCALE) * FOOD_HEIGHT;
-	width = FOOD_WIDTH;
-	height = FOOD_HEIGHT;
+	x = (std::rand() % SCALE) * RECT_WIDTH;
+	y = (std::rand() % SCALE) * RECT_HEIGHT;
+	width = RECT_WIDTH;
+	height = RECT_HEIGHT;
 }
 
 void Food::render(Screen &screen)
@@ -316,10 +323,9 @@ void Screen::render_rect(int x, int y, int width, int height, int red, int green
 void update(Player &player, Food &food, Input &input, unsigned int screen_width, unsigned int screen_height)
 {
 	if (input.restart) {
-		// TODO Make sure it is divisible by BPART_WIDTH and BPART_HEIGHT
-		unsigned int player_x = std::fabs(screen_width / 2);
-		unsigned int player_y = screen_height - std::fabs(screen_height / 4);
-		player.reinit(player_x, player_y, BPART_WIDTH, BPART_HEIGHT);
+	unsigned int player_x = (std::rand() % SCALE) * RECT_WIDTH;
+	unsigned int player_y = (std::rand() % SCALE) * RECT_HEIGHT;
+		player.reinit(player_x, player_y, RECT_WIDTH, RECT_HEIGHT);
 		reset_inputs(input);
 	}
 	if (player.is_dead()) {
@@ -345,15 +351,17 @@ int main()
 	Input input;
 	reset_inputs(input);
 
-	unsigned int player_x = std::fabs(screen.get_width() / 2);
-	unsigned int player_y = screen.get_height() - std::fabs(screen.get_height() / 4);
-	Player player(player_x, player_y, BPART_WIDTH, BPART_HEIGHT);
+	unsigned int player_x = (std::rand() % SCALE) * RECT_WIDTH;
+	unsigned int player_y = (std::rand() % SCALE) * RECT_HEIGHT;
+	Player player(player_x, player_y, RECT_WIDTH, RECT_HEIGHT);
 
 	std::srand(std::time(nullptr));
 	Food food;
 
 	bool game_running = true;
 	while (game_running) {
+		Uint32 start_time_ms = SDL_GetTicks();
+
 		process_input(input, game_running);
 
 		screen.clear(0, 200, 0);
@@ -363,7 +371,14 @@ int main()
 		update(player, food, input, screen.get_width(), screen.get_height());
 
 		screen.draw();
-		SDL_Delay(100);	// TODO Add timing logic
+
+		Uint32 curr_time_ms = SDL_GetTicks();
+		// Limit the FPS to 10 (in a very simple manner) to make the game run always at the same pace.
+		// If updating and rendering takes longer than MS_PER_FRAME,
+		// we have start_time_ms + MS_PER_FRAME < curr_time_ms,
+		// which leads to problems.
+		SDL_Delay(start_time_ms + MS_PER_FRAME - curr_time_ms);
 	}
+
 	return 0;
 }
